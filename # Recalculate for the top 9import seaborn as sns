@@ -1,0 +1,92 @@
+# Recalculate for the top 9import seaborn as sns
+import matplotlib.pyplot as plt
+import plotly.express as px
+import numpy as np
+
+# 1. Stacked Bar Chart
+plt.figure(figsize=(12, 6))
+plot_df_stacked = plot_df.pivot(index='Species', columns='Group', values='Abundance')
+plot_df_stacked.plot(kind='bar', stacked=True)
+plt.title('Top 5 Species Abundance (Stacked)')
+plt.xticks(rotation=45, ha='right')
+plt.ylabel('Abundance')
+# Filter out the 'Unknown' species
+filtered_df = result_df[result_df['Species'] != 'Unknown']
+
+# Recalculate for the top 9 species without 'Unknown'
+filtered_df['Total'] = filtered_df[['Turkey', 'Chicken', 'Pig', 'Rabbit', 'Sugar', 'Control']].sum(axis=1)
+
+# Get top 9 species by total abundance
+filtered_top_9_species = filtered_df.nlargest(9, 'Total')
+
+# Melt the dataframe for plotting
+filtered_plot_df_9 = filtered_top_9_species.melt(id_vars=['Species'], 
+                            value_vars=['Turkey', 'Chicken', 'Pig', 'Rabbit', 'Sugar', 'Control'],
+                            var_name='Group', value_name='Abundance')
+
+# Create the plots for the top 9 species without 'Unknown'
+# 1. Stacked Bar Chart
+plt.figure(figsize=(12, 6))
+filtered_plot_df_stacked_9 = filtered_plot_df_9.pivot(index='Species', columns='Group', values='Abundance')
+filtered_plot_df_stacked_9.plot(kind='bar', stacked=True)
+plt.title('Top 9 Species Abundance (Stacked, No Unknown)')
+plt.xticks(rotation=45, ha='right')
+plt.ylabel('Abundance')
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()
+plt.show()
+
+# 2. Heatmap
+plt.figure(figsize=(10, 6))
+filtered_heatmap_data_9 = filtered_plot_df_9.pivot(index='Species', columns='Group', values='Abundance')
+sns.heatmap(filtered_heatmap_data_9, annot=True, fmt='.0f', cmap='YlOrRd', cbar_kws={'label': 'Abundance'})
+plt.title('Species Abundance Heatmap (Top 9, No Unknown)')
+plt.xticks(rotation=45)
+plt.yticks(rotation=0)
+plt.tight_layout()
+plt.show()
+
+# 3. Point Plot
+plt.figure(figsize=(12, 6))
+sns.pointplot(data=filtered_plot_df_9, x='Species', y='Abundance', hue='Group')
+plt.title('Species Abundance Point Plot (Top 9, No Unknown)')
+plt.xticks(rotation=45, ha='right')
+plt.ylabel('Abundance')
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()
+plt.show()
+
+# 4. Box Plot
+plt.figure(figsize=(12, 6))
+sns.boxplot(data=filtered_plot_df_9, x='Species', y='Abundance', hue='Group')
+plt.title('Species Abundance Box Plot (Top 9, No Unknown)')
+plt.xticks(rotation=45, ha='right')
+plt.ylabel('Abundance')
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()
+plt.show()
+
+# 5. Violin Plot
+plt.figure(figsize=(12, 6))
+sns.violinplot(data=filtered_plot_df_9, x='Species', y='Abundance', hue='Group')
+plt.title('Species Abundance Violin Plot (Top 9, No Unknown)')
+plt.xticks(rotation=45, ha='right')
+plt.ylabel('Abundance')
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()
+plt.show()
+
+# 6. Percentage Stacked Bar Chart
+filtered_plot_df_pct_9 = filtered_plot_df_9.copy()
+filtered_total_abundance_9 = filtered_plot_df_9.groupby('Species')['Abundance'].transform('sum')
+filtered_plot_df_pct_9['Percentage'] = filtered_plot_df_pct_9['Abundance'] / filtered_total_abundance_9 * 100
+
+plt.figure(figsize=(12, 6))
+filtered_plot_df_pct_pivot_9 = filtered_plot_df_pct_9.pivot(index='Species', columns='Group', values='Percentage')
+filtered_plot_df_pct_pivot_9.plot(kind='bar', stacked=True)
+plt.title('Species Abundance (Percentage Stacked, Top 9, No Unknown)')
+plt.xticks(rotation=45, ha='right')
+plt.ylabel('Percentage')
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()
+plt.show()
